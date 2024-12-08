@@ -55,7 +55,7 @@ public class CSVManager
                 _buffer.Clear();
                 _flag = false;
 
-                await Task.Delay(5 * 60 * 10000);
+                await Task.Delay(5 * 60 * 1000);
             }
         });
     }
