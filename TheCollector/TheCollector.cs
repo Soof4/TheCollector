@@ -18,7 +18,7 @@ public class TheCollector : TerrariaPlugin
     public override Version Version => new Version(1, 0, 0);
     private Dictionary<int, int> _onlinePlayers = new Dictionary<int, int>();
     private DateTime _lastTimeUpdateTime = DateTime.UtcNow;
-    public DatabaseManager DbManager = new(new SqliteConnection("Data Source=" + Path.Combine(TShock.SavePath, "SFactions.sqlite")));
+    public DatabaseManager DbManager = new(new SqliteConnection("Data Source=" + Path.Combine(TShock.SavePath, "TheCollector.sqlite")));
     public CSVManager CvsManager = new CSVManager();
     public TheCollector(Main game) : base(game) { }
 
@@ -43,7 +43,7 @@ public class TheCollector : TerrariaPlugin
 
     private void OnServerLeave(LeaveEventArgs args)
     {
-        if (!_onlinePlayers.ContainsKey(args.Who))
+        if (_onlinePlayers.ContainsKey(args.Who) && TShock.Players[args.Who] != null)
         {
             DbManager.SavePlayer(TShock.Players[args.Who].Name, _onlinePlayers[args.Who]);
             _onlinePlayers.Remove(args.Who);
@@ -52,7 +52,7 @@ public class TheCollector : TerrariaPlugin
 
     private void OnServerJoin(JoinEventArgs args)
     {
-        if (!_onlinePlayers.ContainsKey(args.Who))
+        if (!_onlinePlayers.ContainsKey(args.Who) && TShock.Players[args.Who] != null)
         {
             try
             {
@@ -69,7 +69,7 @@ public class TheCollector : TerrariaPlugin
 
     private void OnPlayerSlot(object? sender, GetDataHandlers.PlayerSlotEventArgs args)
     {
-        if (args.Stack == 0) return;
+        if (args.Stack == 0 || !args.Player.IsLoggedIn || args.Player.Group.Name == TShock.Config.Settings.DefaultGuestGroupName) return;
 
         List<object> row = new List<object>() {
             _onlinePlayers[args.PlayerId],
